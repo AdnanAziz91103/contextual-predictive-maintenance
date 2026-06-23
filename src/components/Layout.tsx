@@ -1,4 +1,5 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { to: "/", label: "Dashboard" },
@@ -6,6 +7,49 @@ const navItems = [
   { to: "/performance", label: "Model Performance" },
   { to: "/alerts", label: "Alerts" },
 ];
+
+function AiToggle() {
+  const [enabled, setEnabled] = useState(false);
+
+  useEffect(() => {
+    try {
+      setEnabled(localStorage.getItem("showAIInsights") === "true");
+    } catch {
+      setEnabled(false);
+    }
+  }, []);
+
+  function toggle() {
+    try {
+      const key = "showAIInsights";
+      const next = !enabled;
+      localStorage.setItem(key, String(next));
+      setEnabled(next);
+      window.dispatchEvent(new Event("ai-toggle-changed"));
+    } catch {
+      // ignore in SSR or restricted environments
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <label className="text-xs">AI Insights</label>
+      <button
+        onClick={toggle}
+        className={`inline-flex items-center h-6 w-10 rounded-full p-1 transition-colors duration-200 ${
+          enabled ? "bg-emerald-500" : "bg-slate-300"
+        }`}
+        aria-label="Toggle AI Insights"
+      >
+        <span
+          className={`h-4 w-4 rounded-full bg-white shadow transform transition-all ${
+            enabled ? "translate-x-4" : "translate-x-0"
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
 
 export function Layout() {
   const { location } = useRouterState();
@@ -37,8 +81,9 @@ export function Layout() {
             );
           })}
         </nav>
-        <div className="p-4 text-xs text-muted-foreground border-t border-border">
-          Student Demo Project
+        <div className="p-4 text-xs text-muted-foreground border-t border-border flex items-center justify-between">
+          <div>Student Demo Project</div>
+          <AiToggle />
         </div>
       </aside>
       <main className="flex-1 p-8 overflow-auto">
